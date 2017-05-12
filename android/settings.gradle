@@ -1,0 +1,3 @@
+rootProject.name = 'RouteYourBoot'
+
+include ':app'
