@@ -13,14 +13,28 @@ class Main extends React.Component {
 		this.props.navigation.navigate("Settings");
 	};
 	
+	constructor(props) {
+    super(props);
+    this.state = {text: "getting location..."};
+
+    // Toggle the state every second
+    setInterval(() => {
+			navigator.geolocation.watchPosition((position) => {
+      var lastPosition = JSON.stringify(position);
+      this.setState({text: lastPosition});
+    });
+    }, 1000);
+  }
+	
   render() {
+		let display = this.state.text;
     return (
       <View style={MainStyles.mainView}>
         <View style={MainStyles.titleView}>
 					<Image source={require('./title.png')} />
 				</View>
         <View style={MainStyles.locationsView}>
-					<Text>Todays Locations</Text>
+					<Text>{display}</Text>
 				</View>
         <View style={MainStyles.historyView}>
 					<Text>Locations History</Text>
@@ -119,6 +133,25 @@ const SettingsStyles = StyleSheet.create({
 });
 
 // ================================================ Application ============================================
+
+async function requestLocationPermission() {
+  try {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        'title': 'Location',
+				'message': 'Access to your location for some reason.'
+      }
+    )
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log("You can use the camera")
+    } else {
+      console.log("Camera permission denied")
+    }
+  } catch (err) {
+    console.warn(err)
+  }
+}
 
 const MainApp = StackNavigator({
   Home: { screen: Main },
