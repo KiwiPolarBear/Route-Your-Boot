@@ -1,5 +1,7 @@
+'use strict';
+
 import React, { Component } from 'react';
-import { AppRegistry, View, Text, Image, Button, Alert, TouchableHighlight, StyleSheet } from 'react-native';
+import { AppRegistry, View, Text, Image, Button, Alert, TouchableHighlight, StyleSheet, AsyncStorage } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
 // ================================================ Main Screen ============================================
@@ -7,11 +9,9 @@ import { StackNavigator } from 'react-navigation';
 class Main extends React.Component {
 	enablePressed() {
 		if (this.state.enabled) {
-			Alert.alert('Disable has been pressed!');
 			this.setState({enabled: false})
 			this.setState({enabledText: "Enable"})
 		} else {
-			Alert.alert('Enable has been pressed!');
 			this.setState({enabled: true})
 			this.setState({enabledText: "Disable"})
 		}
@@ -27,17 +27,28 @@ class Main extends React.Component {
 	
 	constructor(props) {
     super(props);
-    this.state = {text: "getting location..."};
+    this.state = {text: "Location Recording Not Enabled"};
     this.state = {enabled: false};
 		this.state = {enabledText: "Enable"}
+		var lastPosition = "Getting Location...";
 
     // Toggle the state every second
     setInterval(() => {
-			navigator.geolocation.watchPosition((position) => {
-      var lastPosition = JSON.stringify(position);
-      this.setState({text: lastPosition});
-    });
-    }, 1000);
+			if (this.state.enabled) {
+				this.setState({text: lastPosition});
+				navigator.geolocation.watchPosition(async (position) => {
+				lastPosition = JSON.stringify(position);
+				
+				// Getting the date the location was recorded and creating a dictionary key.
+				var theDate = new Date(position.timestamp);
+				var dictKey = theDate.getDate() + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
+				
+				this.setState({text: lastPosition});
+			});
+			} else {
+				this.setState({text: "Location Recording Not Enabled"});
+			}
+    }, 5000);
   }
 	
   render() {
