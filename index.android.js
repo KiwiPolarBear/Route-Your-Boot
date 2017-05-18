@@ -5,17 +5,31 @@ import { StackNavigator } from 'react-navigation';
 // ================================================ Main Screen ============================================
 
 class Main extends React.Component {
-	startServicePressed() {
-		Alert.alert('Start Service has been pressed!');
+	enablePressed() {
+		if (this.state.enabled) {
+			Alert.alert('Disable has been pressed!');
+			this.setState({enabled: false})
+			this.setState({enabledText: "Enable"})
+		} else {
+			Alert.alert('Enable has been pressed!');
+			this.setState({enabled: true})
+			this.setState({enabledText: "Disable"})
+		}
 	};
 
 	settingsPressed() {
 		this.props.navigation.navigate("Settings");
 	};
 	
+	historyPressed() {
+		this.props.navigation.navigate("History");
+	}
+	
 	constructor(props) {
     super(props);
     this.state = {text: "getting location..."};
+    this.state = {enabled: false};
+		this.state = {enabledText: "Enable"}
 
     // Toggle the state every second
     setInterval(() => {
@@ -37,14 +51,16 @@ class Main extends React.Component {
 					<Text>{display}</Text>
 				</View>
         <View style={MainStyles.historyView}>
-					<Text>Locations History</Text>
+					<TouchableHighlight onPress={this.historyPressed.bind(this)} style={MainStyles.historyButton}>
+						<Text style={MainStyles.historyButtonText}>Locations History</Text>
+					</TouchableHighlight>
 				</View>
 				<View style={MainStyles.buttonsView}>
-					<TouchableHighlight onPress={this.startServicePressed} style={MainStyles.startServiceButton}>
-						<Text style={MainStyles.startServiceText}>Start Service</Text>
+					<TouchableHighlight onPress={this.enablePressed.bind(this)} style={MainStyles.startServiceButton}>
+						<Text style={MainStyles.startServiceText}>{this.state.enabledText}</Text>
 					</TouchableHighlight>
 					<TouchableHighlight onPress={this.settingsPressed.bind(this)} style={MainStyles.settingsButton}>
-						<Text style={MainStyles.settingsText}>Settings</Text>
+						<Image style={MainStyles.settingsCog} source={require('./cog.png')} />
 					</TouchableHighlight>
 				</View>
       </View>
@@ -67,37 +83,56 @@ const MainStyles = StyleSheet.create({
 	},
 	historyView: {
 		flex: 20, 
-		backgroundColor: 'steelblue'
+		backgroundColor: '#4a4d51',
+		alignItems: 'stretch',
+		justifyContent: 'center'
 	},
 	buttonsView: {
 		flex: 7, 
 		flexDirection: 'row', 
 		justifyContent: 'space-around', 
-		backgroundColor: 'powderblue', 
+		backgroundColor: '#4a4d51', 
 		alignItems: 'stretch'
 	},
   startServiceButton: {
-		backgroundColor: "#841584", 
+		backgroundColor: "#202223", 
 		flex: 3, 
 		margin: 10, 
 		marginRight: 5, 
-		borderRadius: 5
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
   },
   startServiceText: {
-		textAlign: 'center', 
 		fontSize: 40, 
-		fontWeight: 'bold'
+		fontWeight: 'bold',
+		color: '#76787a'
   },
 	settingsButton: {
-		backgroundColor: "#841584", 
+		backgroundColor: "#202223", 
 		flex: 1, 
 		margin: 10, 
-		marginRight: 5, 
-		borderRadius: 5
+		marginLeft: 5,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
-	settingsText: {
-		textAlign: 'center', 
-		fontSize: 20
+	settingsCog: {
+		width: 50,
+		height: 50
+	},
+	historyButton: {
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	historyButtonText: {
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
 	}
 });
 
@@ -105,7 +140,7 @@ const MainStyles = StyleSheet.create({
 
 class Settings extends React.Component {
 	buttonPressed() {
-		this.props.navigation.navigate("Home");
+		this.props.navigation.goBack();
 	}
 	
 	render() {
@@ -132,30 +167,43 @@ const SettingsStyles = StyleSheet.create({
 	}
 });
 
-// ================================================ Application ============================================
+// ================================================ History Screen ============================================
 
-async function requestLocationPermission() {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        'title': 'Location',
-				'message': 'Access to your location for some reason.'
-      }
-    )
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log("You can use the camera")
-    } else {
-      console.log("Camera permission denied")
-    }
-  } catch (err) {
-    console.warn(err)
-  }
+class History extends React.Component {
+	buttonPressed() {
+		this.props.navigation.goBack();
+	}
+	
+	render() {
+		return(
+			<TouchableHighlight 
+				onPress={this.buttonPressed.bind(this)}
+				style={HistoryStyles.homeButton}>
+				<Text style={HistoryStyles.homeText}>Home</Text>
+			</TouchableHighlight>
+		)
+	}
 }
+
+const HistoryStyles = StyleSheet.create({
+	homeButton: {
+		backgroundColor: "#841584", 
+		margin: 10, 
+		marginRight: 5, 
+		borderRadius: 5
+	},
+	homeText: {
+		textAlign: 'center', 
+		fontSize: 20
+	}
+});
+
+// ================================================ Application ============================================
 
 const MainApp = StackNavigator({
   Home: { screen: Main },
   Settings: { screen: Settings },
+  History: { screen: History },
 },{
    	initialRouteName: 'Home',
     headerMode: 'none',
