@@ -1,7 +1,7 @@
 'use strict';
 
 import React, { Component } from 'react';
-import { AppRegistry, View, Text, Image, Button, Alert, TouchableHighlight, StyleSheet, AsyncStorage } from 'react-native';
+import { AppRegistry, View, Text, Image, Button, Alert, TouchableHighlight, StyleSheet, AsyncStorage, ListView } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import storage from 'react-native-modest-storage'
 
@@ -125,74 +125,232 @@ class Settings extends React.Component {
 		this.props.navigation.goBack();
 	}
 	
+	async deleteData() {
+		await storage.clear();
+	}
+	
+	async mockData() {
+		await storage.clear();
+		
+		await storage.set("14/5/2017", "-43.522508,172.581004")
+		await storage.set("15/5/2017", "-43.522508,172.581004")
+		await storage.set("16/5/2017", "-43.522508,172.581004")
+ 	}
+	
 	render() {
 		return(
-			<TouchableHighlight 
-				onPress={this.buttonPressed.bind(this)}
-				style={SettingsStyles.homeButton}>
-				<Text style={SettingsStyles.homeText}>Home</Text>
-			</TouchableHighlight>
+			<View style={SettingsStyles.mainView}>
+				<View style={SettingsStyles.headerView}>
+					<Image source={require('./title.png')} />
+				</View>
+				<View style={SettingsStyles.topView}>
+					<TouchableHighlight 
+						onPress={this.deleteData.bind(this)}
+						style={SettingsStyles.deleteButton}>
+						<Text style={SettingsStyles.deleteText}>Delete Data</Text>
+					</TouchableHighlight>
+					<TouchableHighlight 
+					onPress={this.mockData.bind(this)}
+					style={SettingsStyles.mockButton}>
+					<Text style={SettingsStyles.mockText}>Add Mock Data</Text>
+				</TouchableHighlight>
+				</View>
+				<View style={SettingsStyles.bottomView}>
+					<TouchableHighlight 
+						onPress={this.buttonPressed.bind(this)}
+						style={SettingsStyles.homeButton}>
+						<Text style={SettingsStyles.homeText}>Home</Text>
+					</TouchableHighlight>
+				</View>
+			</View>
 		)
 	}
 }
 
 const SettingsStyles = StyleSheet.create({
 	homeButton: {
-		backgroundColor: "#841584", 
-		margin: 10, 
-		marginRight: 5, 
-		borderRadius: 5
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
 	homeText: {
-		textAlign: 'center', 
-		fontSize: 20
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	deleteButton: {
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	deleteText: {
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	mockButton: {
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	mockText: {
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	mainView: {
+		flex: 1
+	},
+	headerView: {
+		flex: 7,
+		backgroundColor: "white"
+	},
+	topView: {
+		flex: 40,
+		backgroundColor: "#4a4d51"
+	},
+	bottomView: {
+		flex: 7,
+		backgroundColor: "#4a4d51"
 	}
 });
 
 // ================================================ History Screen ============================================
 
 class History extends React.Component {
+	
+	constructor(props) {
+    super(props);
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {locationData: ds.cloneWithRows(["No Location Data"]),
+									lastPosition: "-43.522508,172.581004",
+								 	url : "https://maps.googleapis.com/maps/api/staticmap?center=-43.522508,172.581004&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C-43.522508,172.581004&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ"};
+  }
+	
+	async componentDidMount() {
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+		await storage.keys().then(async (value) => {
+			if (value[0] != null) {
+				this.setState({locationData: ds.cloneWithRows(value)});
+			}
+		});
+	}
+	
 	buttonPressed() {
 		this.props.navigation.goBack();
 	}
 	
 	render() {
 		return(
-			<TouchableHighlight 
-				onPress={this.buttonPressed.bind(this)}
-				style={HistoryStyles.homeButton}>
-				<Text style={HistoryStyles.homeText}>Home</Text>
-			</TouchableHighlight>
+			<View style={HistoryStyles.mainView}>
+				<View style={HistoryStyles.headerView}>
+					<Image source={require('./title.png')} />
+				</View>
+				<View style={HistoryStyles.topView}>
+					<ListView
+						dataSource={this.state.locationData}
+						renderRow={(rowData) => <HistoryButton date={rowData} />}
+					/>
+				</View>
+				<View style={HistoryStyles.bottomView}>
+					<TouchableHighlight 
+						onPress={this.buttonPressed.bind(this)}
+						style={HistoryStyles.homeButton}>
+						<Text style={HistoryStyles.homeText}>Home</Text>
+					</TouchableHighlight>
+				</View>
+			</View>
 		)
 	}
 }
 
 const HistoryStyles = StyleSheet.create({
 	homeButton: {
-		backgroundColor: "#841584", 
-		margin: 10, 
-		marginRight: 5, 
-		borderRadius: 5
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
 	},
 	homeText: {
-		textAlign: 'center', 
-		fontSize: 20
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	mainView: {
+		flex: 1
+	},
+	headerView: {
+		flex: 7,
+		backgroundColor: "white"
+	},
+	topView: {
+		flex: 40,
+		backgroundColor: "#4a4d51"
+	},
+	bottomView: {
+		flex: 7,
+		backgroundColor: "#4a4d51"
 	}
 });
+
+class HistoryButton extends React.Component {
+	buttonPressed() {
+		// Stuff
+	}
+	
+	render() {
+		return(
+			<TouchableHighlight 
+				onPress={this.buttonPressed.bind(this)}
+				style={HistoryButtonStyles.button}>
+				<Text style={HistoryButtonStyles.text}>{this.props.date}</Text>
+			</TouchableHighlight>
+		)
+	}
+}
+
+const HistoryButtonStyles = StyleSheet.create({
+	button: {
+		backgroundColor: "#202223", 
+		height: 50,
+		margin: 10,
+		marginBottom: 5,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	text: {
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	}
+})
 
 // ================================================ Today Screen ============================================
 
 class Today extends React.Component {
 	constructor(props) {
     super(props);
-    this.state = {locationData: [],
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {locationData: ds.cloneWithRows(["No Location Data"]),
 									lastPosition: "-43.522508,172.581004",
 								 	url : "https://maps.googleapis.com/maps/api/staticmap?center=-43.522508,172.581004&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C-43.522508,172.581004&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ"};
   }
 	
 	// Runs after construction is complete
 	async componentDidMount() {
-		
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 		var theDate = new Date();
 		var dictKey = theDate.getDate() + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
 		
@@ -200,9 +358,7 @@ class Today extends React.Component {
 		await storage.get(dictKey).then(async (value) => {
 			var newValue = JSON.parse(value);
 			if (value != null) {
-				this.setState({locationData: newValue});
-			} else {
-				this.setState({locationData: "No Location Data"});
+				this.setState({locationData: ds.cloneWithRows(newValue)});
 			}
 		});
 		
@@ -236,7 +392,7 @@ class Today extends React.Component {
 						newValue = [totalPosition];
 					}
 					
-					this.setState({locationData: newValue});
+					this.setState({locationData: ds.cloneWithRows(newValue)});
 					await storage.set(dictKey, JSON.stringify(newValue))
 					
 				});
@@ -255,13 +411,16 @@ class Today extends React.Component {
 					<Image source={require('./title.png')} />
 				</View>
 				<View style={TodayStyles.topView}>
-					<Image style={{flex: 1}} source={{uri: this.state.url}} />
+					<ListView
+						dataSource={this.state.locationData}
+						renderRow={(rowData) => <TodayButton location={rowData} />}
+					/>
 				</View>
 				<View style={TodayStyles.bottomView}>
 					<TouchableHighlight 
 						onPress={this.buttonPressed.bind(this)}
 						style={TodayStyles.homeButton}>
-						<Text style={TodayStyles.homeText}>{JSON.stringify(this.state.locationData)}</Text>
+						<Text style={TodayStyles.homeText}>Home</Text>
 					</TouchableHighlight>
 				</View>
 			</View>
@@ -279,7 +438,7 @@ const TodayStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	homeText: {
-		fontSize: 10, 
+		fontSize: 40, 
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
@@ -299,6 +458,39 @@ const TodayStyles = StyleSheet.create({
 		backgroundColor: "#4a4d51"
 	}
 });
+
+class TodayButton extends React.Component {
+	buttonPressed() {
+		// Stuff
+	}
+	
+	render() {
+		return(
+			<TouchableHighlight 
+				onPress={this.buttonPressed.bind(this)}
+				style={TodayButtonStyles.button}>
+				<Text style={TodayButtonStyles.text}>{this.props.location}</Text>
+			</TouchableHighlight>
+		)
+	}
+}
+
+const TodayButtonStyles = StyleSheet.create({
+	button: {
+		backgroundColor: "#202223", 
+		height: 50,
+		margin: 10,
+		marginBottom: 5,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	text: {
+		fontSize: 20, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	}
+})
 
 // ================================================ Application ============================================
 
