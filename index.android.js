@@ -132,9 +132,9 @@ class Settings extends React.Component {
 	async mockData() {
 		await storage.clear();
 		
-		await storage.set("14/5/2017", "-43.522508,172.581004")
-		await storage.set("15/5/2017", "-43.522508,172.581004")
-		await storage.set("16/5/2017", "-43.522508,172.581004")
+		await storage.set("14/5/2017", JSON.stringify(["-43.522508,172.581004"]));
+		await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
+		await storage.set("16/5/2017", JSON.stringify(["-43.522508,172.581004"]));
  	}
 	
 	render() {
@@ -258,7 +258,7 @@ class History extends React.Component {
 				<View style={HistoryStyles.topView}>
 					<ListView
 						dataSource={this.state.locationData}
-						renderRow={(rowData) => <HistoryButton date={rowData} />}
+						renderRow={(rowData) => <HistoryButton date={rowData} parent={this} />}
 					/>
 				</View>
 				<View style={HistoryStyles.bottomView}>
@@ -306,7 +306,7 @@ const HistoryStyles = StyleSheet.create({
 
 class HistoryButton extends React.Component {
 	buttonPressed() {
-		// Stuff
+		this.props.parent.props.navigation.navigate("CurrentDay", {key: this.props.date});
 	}
 	
 	render() {
@@ -337,15 +337,128 @@ const HistoryButtonStyles = StyleSheet.create({
 	}
 })
 
+// ================================================ Current Day Screen ============================================
+
+class CurrentDay extends React.Component {
+	constructor(props) {
+    super(props);
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+    this.state = {locationData: ds.cloneWithRows(["No Location Data"])}
+  }
+	
+	// Runs after construction is complete
+	async componentDidMount() {
+		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+		var dictKey = this.props.navigation.state.params.key;
+		
+		// Load any location values for todays date
+		await storage.get(dictKey).then(async (value) => {
+			var newValue = JSON.parse(value);
+			if (value != null) {
+				this.setState({locationData: ds.cloneWithRows(newValue)});
+			}
+		});
+  }
+
+	buttonPressed() {
+		this.props.navigation.goBack();
+	}
+	
+	render() {
+		return(
+			<View style={CurrentDayStyles.mainView}>
+				<View style={CurrentDayStyles.headerView}>
+					<Image source={require('./title.png')} />
+				</View>
+				<View style={CurrentDayStyles.topView}>
+					<ListView
+						dataSource={this.state.locationData}
+						renderRow={(rowData) => <TodayButton location={rowData} parent={this} />}
+					/>
+				</View>
+				<View style={CurrentDayStyles.bottomView}>
+					<TouchableHighlight 
+						onPress={this.buttonPressed.bind(this)}
+						style={CurrentDayStyles.homeButton}>
+						<Text style={CurrentDayStyles.homeText}>Back</Text>
+					</TouchableHighlight>
+				</View>
+			</View>
+		)
+	}
+}
+
+const CurrentDayStyles = StyleSheet.create({
+	homeButton: {
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	homeText: {
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	mainView: {
+		flex: 1
+	},
+	headerView: {
+		flex: 7,
+		backgroundColor: "white"
+	},
+	topView: {
+		flex: 40,
+		backgroundColor: "#4a4d51"
+	},
+	bottomView: {
+		flex: 7,
+		backgroundColor: "#4a4d51"
+	}
+});
+
+class CurrentDayButton extends React.Component {
+	buttonPressed() {
+		this.props.parent.props.navigation.navigate("MapView", {location: this.props.location});
+	}
+	
+	render() {
+		return(
+			<TouchableHighlight 
+				onPress={this.buttonPressed.bind(this)}
+				style={CurrentDayButtonStyles.button}>
+				<Text style={CurrentDayButtonStyles.text}>{this.props.location}</Text>
+			</TouchableHighlight>
+		)
+	}
+}
+
+const CurrentDayButtonStyles = StyleSheet.create({
+	button: {
+		backgroundColor: "#202223", 
+		height: 50,
+		margin: 10,
+		marginBottom: 5,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	text: {
+		fontSize: 20, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	}
+})
+
 // ================================================ Today Screen ============================================
 
 class Today extends React.Component {
 	constructor(props) {
     super(props);
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    this.state = {locationData: ds.cloneWithRows(["No Location Data"]),
-									lastPosition: "-43.522508,172.581004",
-								 	url : "https://maps.googleapis.com/maps/api/staticmap?center=-43.522508,172.581004&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C-43.522508,172.581004&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ"};
+    this.state = {locationData: ds.cloneWithRows(["No Location Data"])}
   }
 	
 	// Runs after construction is complete
@@ -365,22 +478,13 @@ class Today extends React.Component {
 		
     // Runs Every Second
     setInterval(async () => {
-			
-			// Google Static Maps URL Components
-			var urlStart = "https://maps.googleapis.com/maps/api/staticmap?center=";
-			var urlMid = "&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C";
-			var urlEnd = "&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ";
-				
 			// Only enters function when position changes
 			navigator.geolocation.watchPosition(async (position) => {
 				var totalPosition = position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
-				var newUrl = urlStart + totalPosition + urlMid + totalPosition + urlEnd;
-				this.setState({lastPosition: totalPosition})
-				this.setState({url: newUrl})
 
 				// Getting the date the location was recorded and creating a dictionary key
 				var theDate = new Date(position.timestamp);
-				var dictKey = theDate.getDate() + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
+				var dictKey = (theDate.getDate() + 1) + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
 				
 				// Store location data
 				await storage.get(dictKey).then(async (value) => {
@@ -577,7 +681,8 @@ const MainApp = StackNavigator({
   Settings: { screen: Settings },
   History: { screen: History },
 	Today: { screen: Today },
-	MapView: { screen: MapView }
+	MapView: { screen: MapView },
+	CurrentDay: { screen: CurrentDay }
 },{
    	initialRouteName: 'Home',
     headerMode: 'none',
