@@ -469,8 +469,8 @@ class Today extends React.Component {
 		
 		// Load any location values for todays date
 		await storage.get(dictKey).then(async (value) => {
-			var newValue = JSON.parse(value);
 			if (value != null) {
+				var newValue = JSON.parse(value);
 				this.setState({locationData: ds.cloneWithRows(newValue)});
 			}
 		});
@@ -484,7 +484,7 @@ class Today extends React.Component {
 
 				// Getting the date the location was recorded and creating a dictionary key
 				var theDate = new Date(position.timestamp);
-				var dictKey = (theDate.getDate() + 1) + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
+				var dictKey = theDate.getDate() + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
 				
 				// Store location data
 				await storage.get(dictKey).then(async (value) => {
