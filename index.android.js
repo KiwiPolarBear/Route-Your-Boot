@@ -413,7 +413,7 @@ class Today extends React.Component {
 				<View style={TodayStyles.topView}>
 					<ListView
 						dataSource={this.state.locationData}
-						renderRow={(rowData) => <TodayButton location={rowData} />}
+						renderRow={(rowData) => <TodayButton location={rowData} parent={this} />}
 					/>
 				</View>
 				<View style={TodayStyles.bottomView}>
@@ -461,7 +461,7 @@ const TodayStyles = StyleSheet.create({
 
 class TodayButton extends React.Component {
 	buttonPressed() {
-		// Stuff
+		this.props.parent.props.navigation.navigate("MapView", {location: this.props.location});
 	}
 	
 	render() {
@@ -492,13 +492,92 @@ const TodayButtonStyles = StyleSheet.create({
 	}
 })
 
+// ================================================ Map View ============================================
+
+class MapView extends React.Component {
+	buttonPressed() {
+		this.props.navigation.goBack();
+	}
+	
+	constructor(props) {
+    super(props);
+		this.state = {url : "https://maps.googleapis.com/maps/api/staticmap?center=-43.522508,172.581004&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C-43.522508,172.581004&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ"};
+  }
+	
+	componentDidMount() {
+		var urlStart = "https://maps.googleapis.com/maps/api/staticmap?center=";
+		var urlMid = "&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C";
+		var urlEnd = "&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ";
+		
+		var totalPosition = this.props.navigation.state.params.location;
+		var newUrl = urlStart + totalPosition + urlMid + totalPosition + urlEnd;
+		this.setState({url: newUrl})
+		this.setState({text: newUrl})
+	}
+	
+	render() {
+		return(
+			<View style={MapStyles.mainView}>
+				<View style={MapStyles.headerView}>
+					<Image source={require('./title.png')} />
+				</View>
+				<View style={MapStyles.topView}>
+					<Image style={MapStyles.map} source={{uri: this.state.url}} />
+				</View>
+				<View style={MapStyles.bottomView}>
+					<TouchableHighlight 
+						onPress={this.buttonPressed.bind(this)}
+						style={MapStyles.homeButton}>
+						<Text style={MapStyles.homeText}>Back</Text>
+					</TouchableHighlight>
+				</View>
+			</View>
+		)
+	}
+}
+
+const MapStyles = StyleSheet.create({
+	homeButton: {
+		backgroundColor: "#202223", 
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	homeText: {
+		fontSize: 40, 
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	mainView: {
+		flex: 1
+	},
+	headerView: {
+		flex: 7,
+		backgroundColor: "white"
+	},
+	topView: {
+		flex: 40,
+		backgroundColor: "#4a4d51"
+	},
+	bottomView: {
+		flex: 7,
+		backgroundColor: "#4a4d51"
+	},
+	map: {
+		flex: 1
+	}
+});
+
 // ================================================ Application ============================================
 
 const MainApp = StackNavigator({
   Home: { screen: Main },
   Settings: { screen: Settings },
   History: { screen: History },
-	Today: { screen: Today }
+	Today: { screen: Today },
+	MapView: { screen: MapView }
 },{
    	initialRouteName: 'Home',
     headerMode: 'none',
