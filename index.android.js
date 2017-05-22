@@ -1,9 +1,13 @@
 'use strict';
 
 import React, { Component } from 'react';
-import { AppRegistry, View, Text, Image, Button, Alert, TouchableHighlight, StyleSheet, AsyncStorage, ListView } from 'react-native';
+import { AppRegistry, View, Text, Image, Button, Alert, TouchableHighlight, StyleSheet, AsyncStorage, ListView, TextInput, Switch, Slider, Picker } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import storage from 'react-native-modest-storage'
+import storage from 'react-native-modest-storage';
+import Form from 'react-native-form';
+
+
+import UTILS from './app/utils';
 
 // ================================================ Main Screen ============================================
 
@@ -15,15 +19,15 @@ class Main extends React.Component {
 	settingsPressed() {
 		this.props.navigation.navigate("Settings");
 	};
-	
+
 	historyPressed() {
 		this.props.navigation.navigate("History");
 	}
-	
+
 	todayPressed() {
 		this.props.navigation.navigate("Today");
 	}
-	
+
   render() {
     return (
       <View style={MainStyles.mainView}>
@@ -52,36 +56,36 @@ class Main extends React.Component {
 
 const MainStyles = StyleSheet.create({
 	mainView: {
-		flex: 1, 
+		flex: 1,
 		flexDirection: 'column'
 	},
 	titleView: {
-		flex: 7, 
+		flex: 7,
 		backgroundColor: 'white'
 	},
 	locationsView: {
-		flex: 20, 
+		flex: 20,
 		backgroundColor: '#4a4d51',
 		alignItems: 'stretch',
 		justifyContent: 'center'
 	},
 	historyView: {
-		flex: 20, 
+		flex: 20,
 		backgroundColor: '#4a4d51',
 		alignItems: 'stretch',
 		justifyContent: 'center'
 	},
 	buttonsView: {
-		flex: 7, 
-		flexDirection: 'row', 
-		justifyContent: 'space-around', 
-		backgroundColor: '#4a4d51', 
+		flex: 7,
+		flexDirection: 'row',
+		justifyContent: 'space-around',
+		backgroundColor: '#4a4d51',
 		alignItems: 'stretch'
 	},
 	settingsButton: {
-		backgroundColor: "#202223", 
-		flex: 1, 
-		margin: 10, 
+		backgroundColor: "#202223",
+		flex: 1,
+		margin: 10,
 		borderRadius: 5,
 		alignItems: 'center',
 		justifyContent: 'center'
@@ -91,7 +95,7 @@ const MainStyles = StyleSheet.create({
 		height: 50
 	},
 	historyButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -99,12 +103,12 @@ const MainStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	historyButtonText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
 	todayButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -112,7 +116,7 @@ const MainStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	todayButtonText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	}
@@ -124,19 +128,19 @@ class Settings extends React.Component {
 	buttonPressed() {
 		this.props.navigation.goBack();
 	}
-	
+
 	async deleteData() {
 		await storage.clear();
 	}
-	
+
 	async mockData() {
 		await storage.clear();
-		
-		await storage.set("14/5/2017", JSON.stringify(["-43.522508,172.581004"]));
+
+		await storage.set("14/5/2017", JSON.stringify(["-43.522508,172.581004", "-43.522508,172.581004", "-43.522508,172.581004"]));
 		await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
 		await storage.set("16/5/2017", JSON.stringify(["-43.522508,172.581004"]));
  	}
-	
+
 	render() {
 		return(
 			<View style={SettingsStyles.mainView}>
@@ -144,19 +148,19 @@ class Settings extends React.Component {
 					<Image source={require('./title.png')} />
 				</View>
 				<View style={SettingsStyles.topView}>
-					<TouchableHighlight 
+					<TouchableHighlight
 						onPress={this.deleteData.bind(this)}
 						style={SettingsStyles.deleteButton}>
 						<Text style={SettingsStyles.deleteText}>Delete Data</Text>
 					</TouchableHighlight>
-					<TouchableHighlight 
+					<TouchableHighlight
 					onPress={this.mockData.bind(this)}
 					style={SettingsStyles.mockButton}>
 					<Text style={SettingsStyles.mockText}>Add Mock Data</Text>
 				</TouchableHighlight>
 				</View>
 				<View style={SettingsStyles.bottomView}>
-					<TouchableHighlight 
+					<TouchableHighlight
 						onPress={this.buttonPressed.bind(this)}
 						style={SettingsStyles.homeButton}>
 						<Text style={SettingsStyles.homeText}>Home</Text>
@@ -169,7 +173,7 @@ class Settings extends React.Component {
 
 const SettingsStyles = StyleSheet.create({
 	homeButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -177,12 +181,12 @@ const SettingsStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	homeText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
 	deleteButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -190,12 +194,12 @@ const SettingsStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	deleteText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
 	mockButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -203,7 +207,7 @@ const SettingsStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	mockText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
@@ -227,7 +231,7 @@ const SettingsStyles = StyleSheet.create({
 // ================================================ History Screen ============================================
 
 class History extends React.Component {
-	
+
 	constructor(props) {
     super(props);
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
@@ -235,7 +239,7 @@ class History extends React.Component {
 									lastPosition: "-43.522508,172.581004",
 								 	url : "https://maps.googleapis.com/maps/api/staticmap?center=-43.522508,172.581004&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C-43.522508,172.581004&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ"};
   }
-	
+
 	async componentDidMount() {
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 		await storage.keys().then(async (value) => {
@@ -244,11 +248,11 @@ class History extends React.Component {
 			}
 		});
 	}
-	
+
 	buttonPressed() {
 		this.props.navigation.goBack();
 	}
-	
+
 	render() {
 		return(
 			<View style={HistoryStyles.mainView}>
@@ -262,7 +266,9 @@ class History extends React.Component {
 					/>
 				</View>
 				<View style={HistoryStyles.bottomView}>
-					<TouchableHighlight 
+				</View>
+				<View style={HistoryStyles.bottomView}>
+					<TouchableHighlight
 						onPress={this.buttonPressed.bind(this)}
 						style={HistoryStyles.homeButton}>
 						<Text style={HistoryStyles.homeText}>Home</Text>
@@ -275,7 +281,7 @@ class History extends React.Component {
 
 const HistoryStyles = StyleSheet.create({
 	homeButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -283,7 +289,7 @@ const HistoryStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	homeText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
@@ -306,12 +312,12 @@ const HistoryStyles = StyleSheet.create({
 
 class HistoryButton extends React.Component {
 	buttonPressed() {
-		this.props.parent.props.navigation.navigate("CurrentDay", {key: this.props.date});
+		this.props.parent.props.navigation.navigate("CurrentDay", {date: this.props.date});
 	}
-	
+
 	render() {
 		return(
-			<TouchableHighlight 
+			<TouchableHighlight
 				onPress={this.buttonPressed.bind(this)}
 				style={HistoryButtonStyles.button}>
 				<Text style={HistoryButtonStyles.text}>{this.props.date}</Text>
@@ -322,7 +328,7 @@ class HistoryButton extends React.Component {
 
 const HistoryButtonStyles = StyleSheet.create({
 	button: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		height: 50,
 		margin: 10,
 		marginBottom: 5,
@@ -331,7 +337,7 @@ const HistoryButtonStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	text: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	}
@@ -343,27 +349,53 @@ class CurrentDay extends React.Component {
 	constructor(props) {
     super(props);
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    this.state = {locationData: ds.cloneWithRows(["No Location Data"])}
+    this.state = {locationData: ds.cloneWithRows(["No Location Data"]),
+									distanceTraveled: 0.0,
+									units: "km"}
   }
-	
+
 	// Runs after construction is complete
 	async componentDidMount() {
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-		var dictKey = this.props.navigation.state.params.key;
-		
+		var dictKey = this.props.navigation.state.params.date;
+		// console.warn(dictkey);
+
 		// Load any location values for todays date
 		await storage.get(dictKey).then(async (value) => {
-			var newValue = JSON.parse(value);
+			var coords = JSON.parse(value);
+			var coordinates = new Array();
 			if (value != null) {
-				this.setState({locationData: ds.cloneWithRows(newValue)});
+				this.setState({locationData: ds.cloneWithRows(coords)});
+				for (var i = 0; i < coords.length; i++) {
+					coordinates.push([coords[i]]);
+				}
+
 			}
+			var totalDistance = UTILS.calculateTotalDistance(coords);
+			this.setState({distanceTraveled: totalDistance})
 		});
+
+
   }
 
 	buttonPressed() {
 		this.props.navigation.goBack();
 	}
-	
+
+	convertUnits() {
+		var units = this.state.units;
+		var distance = this.state.distanceTraveled;
+		if (units == "km") {
+			this.setState({distanceTraveled: UTILS.toMiles(distance)});
+			this.setState({units: "mi"});
+		} else {
+			this.setState({distanceTraveled: UTILS.toKilometers(distance)});
+			this.setState({units: "km"});
+		}
+	}
+
+
+
 	render() {
 		return(
 			<View style={CurrentDayStyles.mainView}>
@@ -377,7 +409,16 @@ class CurrentDay extends React.Component {
 					/>
 				</View>
 				<View style={CurrentDayStyles.bottomView}>
-					<TouchableHighlight 
+					<TouchableHighlight	style={CurrentDayStyles.homeButton}
+						onPress={this.convertUnits.bind(this)}>
+						<Text>
+							<Text style={CurrentDayStyles.normalText}>Total Distance: </Text>
+							<Text style={CurrentDayStyles.distanceText}>{this.state.distanceTraveled} {this.state.units}</Text>
+						</Text>
+					</TouchableHighlight>
+				</View>
+				<View style={CurrentDayStyles.bottomView}>
+					<TouchableHighlight
 						onPress={this.buttonPressed.bind(this)}
 						style={CurrentDayStyles.homeButton}>
 						<Text style={CurrentDayStyles.homeText}>Back</Text>
@@ -389,8 +430,18 @@ class CurrentDay extends React.Component {
 }
 
 const CurrentDayStyles = StyleSheet.create({
+	distanceText: {
+		fontSize: 25,
+		fontWeight: 'bold',
+		color: '#800000'
+	},
+	normalText: {
+		fontSize: 25,
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
 	homeButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -398,7 +449,7 @@ const CurrentDayStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	homeText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
@@ -421,12 +472,15 @@ const CurrentDayStyles = StyleSheet.create({
 
 class CurrentDayButton extends React.Component {
 	buttonPressed() {
-		this.props.parent.props.navigation.navigate("MapView", {location: this.props.location});
+		this.props.parent.props.navigation.navigate("MapView", {
+			location: this.props.location,
+			date: this.props.parent.props.navigation.state.params.key
+		});
 	}
-	
+
 	render() {
 		return(
-			<TouchableHighlight 
+			<TouchableHighlight
 				onPress={this.buttonPressed.bind(this)}
 				style={CurrentDayButtonStyles.button}>
 				<Text style={CurrentDayButtonStyles.text}>{this.props.location}</Text>
@@ -437,7 +491,7 @@ class CurrentDayButton extends React.Component {
 
 const CurrentDayButtonStyles = StyleSheet.create({
 	button: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		height: 50,
 		margin: 10,
 		marginBottom: 5,
@@ -446,11 +500,13 @@ const CurrentDayButtonStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	text: {
-		fontSize: 20, 
+		fontSize: 20,
 		fontWeight: 'bold',
 		color: '#76787a'
 	}
 })
+
+// ============================================ Distance Traveled ===========================================
 
 // ================================================ Today Screen ============================================
 
@@ -458,24 +514,54 @@ class Today extends React.Component {
 	constructor(props) {
     super(props);
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-    this.state = {locationData: ds.cloneWithRows(["No Location Data"])}
+    this.state = {
+			locationData: ds.cloneWithRows(["No Location Data"]),
+			rawLocationData: '',
+			namedData: ds.cloneWithRows(["No Location Data"]),
+			places: null,
+			date: null,
+		}
   }
-	
+
 	// Runs after construction is complete
 	async componentDidMount() {
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 		var theDate = new Date();
 		var dictKey = theDate.getDate() + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
-		
+		this.state.date = dictKey;
+
 		// Load any location values for todays date
 		await storage.get(dictKey).then(async (value) => {
 			if (value != null) {
 				var newValue = JSON.parse(value);
-				this.setState({locationData: ds.cloneWithRows(newValue)});
+				this.setState({locationData: ds.cloneWithRows(newValue), rawLocationData: newValue});
 			}
 		});
-		
-		
+
+		// await storage.set("places", places);
+		// await storage.get("places").then(async (value) => {
+		// 	var places = JSON.parse(value);
+		// 	var points = this.state.rawLocationData;
+		// 	if (places != null) {
+		// 		this.state.places = places;
+		// 		var namedArray = new Array();
+		// 		for (var i = 0; i < points.length; i++) {
+		// 			var thePlace = UTILS.checkPlaces(places, points[i]);
+		// 			if (thePlace != null) {
+		// 				var place = thePlace;
+		// 			} else {
+		// 				var place = points[i];
+		// 			}
+		// 			namedArray.push(place);
+		// 		}
+		// 		// console.warn(namedArray);
+		// 		this.setState({namedData: ds.cloneWithRows(namedArray)});
+		// 	} else {
+		// 		this.setState({namedData: ds.cloneWithRows(points)});
+		// 	}
+		// });
+
+
     // Runs Every Second
     setInterval(async () => {
 			// Only enters function when position changes
@@ -485,20 +571,28 @@ class Today extends React.Component {
 				// Getting the date the location was recorded and creating a dictionary key
 				var theDate = new Date(position.timestamp);
 				var dictKey = theDate.getDate() + "/" + (theDate.getMonth() + 1) + "/" + theDate.getFullYear();
-				
+
 				// Store location data
 				await storage.get(dictKey).then(async (value) => {
 					var newValue = JSON.parse(value);
-					
+
 					if (value != null) {
 						newValue.push(totalPosition);
 					} else {
 						newValue = [totalPosition];
 					}
-					
+
 					this.setState({locationData: ds.cloneWithRows(newValue)});
-					await storage.set(dictKey, JSON.stringify(newValue))
-					
+					var coords = JSON.stringify(newValue);
+					await storage.set(dictKey, coords);
+					// await storage.get("places").then(async (values) => {
+					// 	var places = JSON.parse(value);
+					// 	if (places != null) {
+					//
+					// 	}
+					// });
+					// await storage.set(coords, coords)
+
 				});
 			});
     }, 1000);
@@ -507,7 +601,7 @@ class Today extends React.Component {
 	buttonPressed() {
 		this.props.navigation.goBack();
 	}
-	
+
 	render() {
 		return(
 			<View style={TodayStyles.mainView}>
@@ -517,11 +611,11 @@ class Today extends React.Component {
 				<View style={TodayStyles.topView}>
 					<ListView
 						dataSource={this.state.locationData}
-						renderRow={(rowData) => <TodayButton location={rowData} parent={this} />}
+						renderRow={(rowData) => <TodayButton location={rowData} date={this.state.date} parent={this} />}
 					/>
 				</View>
 				<View style={TodayStyles.bottomView}>
-					<TouchableHighlight 
+					<TouchableHighlight
 						onPress={this.buttonPressed.bind(this)}
 						style={TodayStyles.homeButton}>
 						<Text style={TodayStyles.homeText}>Home</Text>
@@ -534,7 +628,7 @@ class Today extends React.Component {
 
 const TodayStyles = StyleSheet.create({
 	homeButton: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
@@ -542,7 +636,7 @@ const TodayStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	homeText: {
-		fontSize: 40, 
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
 	},
@@ -565,12 +659,14 @@ const TodayStyles = StyleSheet.create({
 
 class TodayButton extends React.Component {
 	buttonPressed() {
-		this.props.parent.props.navigation.navigate("MapView", {location: this.props.location});
+		this.props.parent.props.navigation.navigate("MapView", {
+			location: this.props.location,
+			date: this.props.date});
 	}
-	
+
 	render() {
 		return(
-			<TouchableHighlight 
+			<TouchableHighlight
 				onPress={this.buttonPressed.bind(this)}
 				style={TodayButtonStyles.button}>
 				<Text style={TodayButtonStyles.text}>{this.props.location}</Text>
@@ -581,7 +677,7 @@ class TodayButton extends React.Component {
 
 const TodayButtonStyles = StyleSheet.create({
 	button: {
-		backgroundColor: "#202223", 
+		backgroundColor: "#202223",
 		height: 50,
 		margin: 10,
 		marginBottom: 5,
@@ -590,7 +686,7 @@ const TodayButtonStyles = StyleSheet.create({
 		justifyContent: 'center'
 	},
 	text: {
-		fontSize: 20, 
+		fontSize: 20,
 		fontWeight: 'bold',
 		color: '#76787a'
 	}
@@ -602,23 +698,29 @@ class MapView extends React.Component {
 	buttonPressed() {
 		this.props.navigation.goBack();
 	}
-	
+
+	saveButtonPressed() {
+		var location = this.props.navigation.state.params.location;
+		var date = this.props.navigation.state.params.date;
+		this.props.navigation.navigate('Save', {date: date, location: location})
+	}
+
 	constructor(props) {
     super(props);
 		this.state = {url : "https://maps.googleapis.com/maps/api/staticmap?center=-43.522508,172.581004&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C-43.522508,172.581004&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ"};
   }
-	
+
 	componentDidMount() {
 		var urlStart = "https://maps.googleapis.com/maps/api/staticmap?center=";
 		var urlMid = "&zoom=14&size=400x400&markers=color:red%7Clabel:Location%7C";
 		var urlEnd = "&key=AIzaSyDpx12A9b_JJg63454JVDEesRkS_knDZaQ";
-		
+
 		var totalPosition = this.props.navigation.state.params.location;
 		var newUrl = urlStart + totalPosition + urlMid + totalPosition + urlEnd;
 		this.setState({url: newUrl})
 		this.setState({text: newUrl})
 	}
-	
+
 	render() {
 		return(
 			<View style={MapStyles.mainView}>
@@ -629,10 +731,15 @@ class MapView extends React.Component {
 					<Image style={MapStyles.map} source={{uri: this.state.url}} />
 				</View>
 				<View style={MapStyles.bottomView}>
-					<TouchableHighlight 
+					<TouchableHighlight
 						onPress={this.buttonPressed.bind(this)}
-						style={MapStyles.homeButton}>
-						<Text style={MapStyles.homeText}>Back</Text>
+						style={MapStyles.backButton}>
+						<Text style={MapStyles.backText}>Back</Text>
+					</TouchableHighlight>
+					<TouchableHighlight
+						onPress={this.saveButtonPressed.bind(this)}
+						style={MapStyles.saveButton}>
+						<Text style={MapStyles.backText}>Save</Text>
 					</TouchableHighlight>
 				</View>
 			</View>
@@ -641,18 +748,27 @@ class MapView extends React.Component {
 }
 
 const MapStyles = StyleSheet.create({
-	homeButton: {
-		backgroundColor: "#202223", 
+	backButton: {
+		backgroundColor: "#202223",
+		flex: 1,
+		// width: 100,
+		margin: 10,
+		borderRadius: 5
+		// alignItems: 'center',rr
+		// justifyContent: 'center'
+	},
+	saveButton: {
+		backgroundColor: "#202223",
 		flex: 1,
 		margin: 10,
 		borderRadius: 5,
-		alignItems: 'center',
-		justifyContent: 'center'
 	},
-	homeText: {
-		fontSize: 40, 
+	backText: {
+		textAlign: 'center',
+		fontSize: 40,
 		fontWeight: 'bold',
 		color: '#76787a'
+
 	},
 	mainView: {
 		flex: 1
@@ -667,12 +783,124 @@ const MapStyles = StyleSheet.create({
 	},
 	bottomView: {
 		flex: 7,
+		flexDirection: 'row',
 		backgroundColor: "#4a4d51"
 	},
 	map: {
 		flex: 1
 	}
 });
+
+// ================================================ Save ============================================
+
+class Save extends React.Component {
+	constructor(props) {
+    super(props);
+    this.state = {
+			placeholder: "place",
+			value: 200
+		}
+  }
+
+	buttonPressed() {
+		this.props.navigation.goBack();
+	}
+
+	saveForm() {
+		var values = this.refs.form.getValues();
+		var radius = values["radius"] * 0.001; // m => km
+		var location = this.props.navigation.state.params.location;
+		var date = this.props.navigation.state.params.date;
+		console.warn(date);
+		console.warn(location);
+		console.warn(values["place"]);
+		console.warn(values["radius"]);
+	}
+
+
+	render() {
+		return(
+			<View style={SaveStyles.mainView}>
+				<View style={SaveStyles.headerView}>
+					<Image source={require('./title.png')} />
+				</View>
+				<View style={SaveStyles.topView}>
+				  <View style={{height:30, alignItems:'center'}} >
+						<Text style={SaveStyles.normalText}>Set Placename:</Text>
+					</View>
+					<Form ref="form">
+						<TextInput style={SaveStyles.textInputStyle} type="TextInput" name="place"onChangeText={(placeholder) => this.setState({placeholder})} value={this.state.placeholder}/>
+						<View style={{height:45, alignItems:'center', marginBottom: 20}}>
+							<Text style={SaveStyles.normalText}>Set Radius:</Text>
+							<Text style={SaveStyles.textInputStyle}>{this.state.value && +this.state.value.toFixed(0)} meters</Text>
+						</View>
+						<Slider type="Slider" name="radius" minimumValue={0} maximumValue={1000} value={100} maximunTrackTintColor='#800000' minimunTrackTintColor='#800000' thumbTintColor='black' onValueChange={(value) => this.setState({value: value})}/>
+					</Form>
+				</View>
+				<View style={SaveStyles.bottomView}>
+					<TouchableHighlight
+						onPress={this.buttonPressed.bind(this)}
+						style={SaveStyles.homeButton}>
+						<Text style={SaveStyles.homeText}>Back</Text>
+					</TouchableHighlight>
+					<TouchableHighlight
+						onPress={this.saveForm.bind(this)}
+						style={SaveStyles.homeButton}>
+						<Text style={SaveStyles.homeText}>Save</Text>
+					</TouchableHighlight>
+				</View>
+			</View>
+		)
+	}
+}
+
+const SaveStyles = StyleSheet.create({
+	formStyle: {
+		marginTop:40,
+		color: '#800000',
+	},
+	textInputStyle: {
+		fontSize: 25,
+		fontWeight: 'bold',
+		color: '#800000'
+	},
+	normalText: {
+		fontSize: 25,
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	homeButton: {
+		backgroundColor: "#202223",
+		flex: 1,
+		margin: 10,
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center'
+	},
+	homeText: {
+		fontSize: 40,
+		fontWeight: 'bold',
+		color: '#76787a'
+	},
+	mainView: {
+		justifyContent: 'space-between',
+		flex: 1
+	},
+	headerView: {
+		flex: 7,
+		backgroundColor: "white"
+	},
+	topView: {
+		flex: 40,
+		backgroundColor: "#4a4d51"
+	},
+	bottomView: {
+		flexDirection: 'row',
+		flex: 7,
+		backgroundColor: "#4a4d51"
+	}
+});
+
 
 // ================================================ Application ============================================
 
@@ -682,6 +910,7 @@ const MainApp = StackNavigator({
   History: { screen: History },
 	Today: { screen: Today },
 	MapView: { screen: MapView },
+	Save: { screen: Save},
 	CurrentDay: { screen: CurrentDay }
 },{
    	initialRouteName: 'Home',
