@@ -136,7 +136,11 @@ class Settings extends React.Component {
 	async mockData() {
 		await storage.clear();
 
-		await storage.set("14/5/2017", JSON.stringify(["-43.522508,172.581004", "-43.522508,172.581004", "-43.522508,172.581004"]));
+		// var dates1 = {"14/5/2017":["-43.522508,172.581004", "-55.522508,180.581004", "-65.522508,190.581004"],"15/5/2017":["-20.522508,200.581004"]};
+		// console.warn(JSON.parse(JSON.stringify(dates1))["14/5/2017"]);
+		// await storage.set("dates", JSON.stringify(dates1));
+
+		await storage.set("14/5/2017", JSON.stringify(["43.522508,172.581004", "44.52508,172.581004", "45.522508,172.581004"]));
 		await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
 		await storage.set("16/5/2017", JSON.stringify(["-43.523495, 172.583331"]));
  	}
@@ -241,13 +245,44 @@ class History extends React.Component {
   }
 
 	async componentDidMount() {
-		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-		await storage.keys().then(async (value) => {
-			if (value[0] != null) {
-				this.setState({locationData: ds.cloneWithRows(value)});
-			}
-		});
-	}
+	const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+	await storage.keys().then(async (value) => {
+		if (value[0] != null) {
+			this.setState({locationData: ds.cloneWithRows(value)});
+		}
+	});
+}
+
+	// async componentDidMount() {
+	// 	const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+	// 	await storage.keys().then(async (value) => {
+	// 		if (value[0] != null) {
+	// 			var dates = JSON.parse(value);
+	// 			// console.warn(dates["14/5/2017"]);
+	// 			// var
+	// 			//
+	// 			// for (var key in dates) {
+	// 			//   if (dates.hasOwnProperty(key)) {
+	// 			//     console.warn(key + " -> " + dates[key]);
+	// 					// console.warn(dates[key][3]);
+	// 					// for (var location in dates[key]) {
+	// 					// 	console.warn(location);
+	// 					// }
+	// 			  }
+	// 			}
+
+
+
+				// console.warn(dates.length);
+				// for (var i = 0; i < dates.length; i++) {
+				// 	var date = dates[i];
+				// 	console.warn(date);
+				// }
+				// console.warn(dates["14/5/2017"]);
+				// this.setState({locationData: ds.cloneWithRows(value)});
+	// 		}
+	// 	});
+	// }
 
 	buttonPressed() {
 		this.props.navigation.goBack();

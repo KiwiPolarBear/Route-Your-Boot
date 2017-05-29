@@ -12,9 +12,15 @@ function calculateTotalDistance(coordinates) {
   if (length < 2) {
     return total;
   }
-  var point1 = new GeoPoint(parseInt(coordinates[0].split(',')[0]),parseInt(coordinates[0].split(',')[0]));
+
+  console.log(coordinates)
+  console.log(parseInt(coordinates[0].split(',')[0]));
+  console.log(parseInt(coordinates[0].split(',')[1]));
+
+  var point1 = new GeoPoint(parseInt(coordinates[0].split(',')[0]),parseInt(coordinates[0].split(',')[1]));
   var point2 = new GeoPoint(parseInt(coordinates[1].split(',')[0]),parseInt(coordinates[1].split(',')[1]));
-  total += point1.distanceTo(point2);
+  total = point1.distanceTo(point2);
+
   for (var i = 2; i < length; i++) {
     point1 = point2;
     point2 = new GeoPoint(parseInt(coordinates[i].split(',')[0]),parseInt(coordinates[i].split(',')[1]));
