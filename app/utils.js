@@ -13,20 +13,15 @@ function calculateTotalDistance(coordinates) {
     return total;
   }
 
-  console.log(coordinates)
-  console.log(parseInt(coordinates[0].split(',')[0]));
-  console.log(parseInt(coordinates[0].split(',')[1]));
-
   var point1 = new GeoPoint(parseInt(coordinates[0].split(',')[0]),parseInt(coordinates[0].split(',')[1]));
   var point2 = new GeoPoint(parseInt(coordinates[1].split(',')[0]),parseInt(coordinates[1].split(',')[1]));
   total = point1.distanceTo(point2);
-
   for (var i = 2; i < length; i++) {
     point1 = point2;
     point2 = new GeoPoint(parseInt(coordinates[i].split(',')[0]),parseInt(coordinates[i].split(',')[1]));
     total += point1.distanceTo(point2);
   }
-  return roundTo2(toKilometers(total));
+  return toKilometers(total);
 }
 
 function toMiles(value) {
@@ -50,26 +45,17 @@ function inRadius(center, radius, point) {
   }
 
   var box = center.boundingCoordinates(radius);
-
   var sw = box[0];
   var ne = box[1];
 
-
-  if (lat < ne.latitude() && lat > sw.latitude() && long < ne.latitude() && long > sw.latitude()) {
+  if (lat < ne.latitude() && lat > sw.latitude() && long < ne.longitude() && long > sw.longitude()) {
     return true;
   } else {
     return false;
   }
 }
 
-function inPlace(placeData,pointData) {
-  var place = placeData.split(',').map(Number);
-  var point = pointData.split(',').map(Number);
-  var center = new GeoPoint(place[0],place[1]);
-  var point = new GeoPoint(point[0], point[1]);
-  var radius = place[2];
-  return inRadius(center, radius, point);
-}
+
 
 function toGeoPoint(pointData) {
   var pointArr = pointData.split(',').map(Number);
@@ -77,33 +63,46 @@ function toGeoPoint(pointData) {
   return point;
 }
 
-function checkPlaces(object, point) {
-  var places = Array();
-  for (var place in object) {
-    if (object.hasOwnProperty(place)) {
-      console.log(point);
-      console.log(object[place]);
-      if (inPlace(object[place], point)) {
-        places.push(place);
+function inPlace(rawPlace, rawPoint, rawRadius) {
+
+  var place = rawPlace.split(',').map(Number);
+  var point = rawPoint.split(',').map(Number);
+  var center = new GeoPoint(place[0],place[1]);
+  var point = new GeoPoint(point[0], point[1]);
+  var radius = parseFloat(rawRadius);
+
+  return inRadius(center, radius, point);
+}
+
+function checkPlaces(places, coord) {
+  var within = new Array();
+  for (var place in places) {
+    if (places.hasOwnProperty(place)) {
+      var center = places[place][0];
+      var radius = places[place][1];
+      var isIn = inPlace(center, coord, radius);
+      if (isIn == true) {
+        within.push(place);
       }
     }
   }
-  var center = toGeoPoint(point);
-  if (places.length > 1) {
+  if (within.length > 1) {
     var min = Infinity;
-    var thePlace = places[0];
-    for (var i = 0; i < places.length; i++) {
-      var place = places[i];
-      var point = toGeoPoint(object[place]);
-      var d = center.distanceTo(point);
+    var c = toGeoPoint(coord);
+    for (var i = 0; i < within.length; i++) {
+      var s = toGeoPoint(places[within[i]][0]);
+      var d = s.distanceTo(c);
       if (d < min) {
-        d = min;
-        thePlace = place;
+        min = d;
+        var optimal = within[i];
       }
     }
-    return thePlace;
+    return optimal;
+  } else if (within.length == 0) {
+    return coord;
+  } else {
+    return within[0];
   }
-  return places[0]
 }
 
 function test2() {
@@ -114,10 +113,11 @@ function test3() {
   return inPlace("0.0,0.0,200","0.0,1.0")
 }
 
+
 function test4() {
-  var obj = {'gym':'7.0,7.3,1','school':'8.0,7.0,1','beach':'9.0002,7.0,50'};
-  var p = '8.0,7.0';
-  return checkPlaces(obj,p);
+  var places = {'gym': [ '-43.522508,172.581007', 10 ], 'school': [ '-43.522508,172.581004', 10 ]};
+  var coord = '-43.522508,172.581004';
+  return checkPlaces(places,coord);
 }
 
 // console.log(test4());
@@ -133,7 +133,7 @@ const utils = {
   toMiles,
   checkPlaces
 };
-//
+
 window.utils = utils;
 
 export default utils;

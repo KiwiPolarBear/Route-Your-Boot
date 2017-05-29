@@ -136,13 +136,15 @@ class Settings extends React.Component {
 	async mockData() {
 		await storage.clear();
 
-		// var dates1 = {"14/5/2017":["-43.522508,172.581004", "-55.522508,180.581004", "-65.522508,190.581004"],"15/5/2017":["-20.522508,200.581004"]};
-		// console.warn(JSON.parse(JSON.stringify(dates1))["14/5/2017"]);
-		// await storage.set("dates", JSON.stringify(dates1));
+		// await storage.set("places", JSON.stringify({"James Height":["-43.523750, 172.582829",0.2],"gym":["-43.527244, 172.584671", 0.1],"Bush Inn":["-43.530488, 172.574897", 0.2]}));
 
-		await storage.set("14/5/2017", JSON.stringify(["43.522508,172.581004", "44.52508,172.581004", "45.522508,172.581004"]));
-		await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
-		await storage.set("16/5/2017", JSON.stringify(["-43.523495, 172.583331"]));
+		var dates1 = {"14/5/2017":["-43.523750, 172.582827","-43.527244, 172.584671", "-43.530488, 172.574897"],"15/5/2017":["-20.522508,150.581004"]};
+		// console.warn(JSON.parse(JSON.stringify(dates1))["14/5/2017"]);
+		await storage.set("dates", JSON.stringify(dates1));
+		//
+		// await storage.set("14/5/2017", JSON.stringify(["43.522508,172.581004", "44.52508,172.581004", "45.522508,172.581004"]));
+		// await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
+		// await storage.set("16/5/2017", JSON.stringify(["-43.523495, 172.583331"]));
  	}
 
 	render() {
@@ -246,43 +248,20 @@ class History extends React.Component {
 
 	async componentDidMount() {
 	const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-	await storage.keys().then(async (value) => {
+	await storage.get("dates").then(async (value) => {
 		if (value[0] != null) {
-			this.setState({locationData: ds.cloneWithRows(value)});
+			var data = JSON.parse(value);
+			var dates = new Array();
+			for (var key in data) {
+			  if (data.hasOwnProperty(key)) {
+					dates.push(key);
+				}
+			}
+			this.setState({locationData: ds.cloneWithRows(dates)});
 		}
 	});
 }
 
-	// async componentDidMount() {
-	// 	const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-	// 	await storage.keys().then(async (value) => {
-	// 		if (value[0] != null) {
-	// 			var dates = JSON.parse(value);
-	// 			// console.warn(dates["14/5/2017"]);
-	// 			// var
-	// 			//
-	// 			// for (var key in dates) {
-	// 			//   if (dates.hasOwnProperty(key)) {
-	// 			//     console.warn(key + " -> " + dates[key]);
-	// 					// console.warn(dates[key][3]);
-	// 					// for (var location in dates[key]) {
-	// 					// 	console.warn(location);
-	// 					// }
-	// 			  }
-	// 			}
-
-
-
-				// console.warn(dates.length);
-				// for (var i = 0; i < dates.length; i++) {
-				// 	var date = dates[i];
-				// 	console.warn(date);
-				// }
-				// console.warn(dates["14/5/2017"]);
-				// this.setState({locationData: ds.cloneWithRows(value)});
-	// 		}
-	// 	});
-	// }
 
 	buttonPressed() {
 		this.props.navigation.goBack();
@@ -386,31 +365,40 @@ class CurrentDay extends React.Component {
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {locationData: ds.cloneWithRows(["No Location Data"]),
 									distanceTraveled: 0.0,
-									units: "km"}
+									units: "km",
+									names: ""}
   }
 
 	// Runs after construction is complete
+
 	async componentDidMount() {
 		const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-		var dictKey = this.props.navigation.state.params.date;
-		// console.warn(dictkey);
+		var date = this.props.navigation.state.params.date;
 
-		// Load any location values for todays date
-		await storage.get(dictKey).then(async (value) => {
-			var coords = JSON.parse(value);
-			var coordinates = new Array();
+		await storage.get("dates").then(async (value) => {
 			if (value != null) {
-				this.setState({locationData: ds.cloneWithRows(coords)});
-				for (var i = 0; i < coords.length; i++) {
-					coordinates.push([coords[i]]);
+				var data = JSON.parse(value);
+				var coordinates = data[date];
+
+				var names = new Array();
+				for (var i = 0; i < coordinates.length; i++) {
+					var coord = coordinates[i];
+					await storage.get("places").then( async (value) => {
+								var places = JSON.parse(value);
+								console.log(places);
+								var name = UTILS.checkPlaces(places,coord);
+								names.push(name);
+
+
+							this.setState({names: names});
+							this.setState({locationData: ds.cloneWithRows(coordinates)});
+							var totalDistance = UTILS.calculateTotalDistance(coordinates);
+							this.setState({distanceTraveled: totalDistance});
+					});
 				}
 
 			}
-			var totalDistance = UTILS.calculateTotalDistance(coords);
-			this.setState({distanceTraveled: totalDistance})
 		});
-
-
   }
 
 	buttonPressed() {
@@ -440,7 +428,7 @@ class CurrentDay extends React.Component {
 				<View style={CurrentDayStyles.topView}>
 					<ListView
 						dataSource={this.state.locationData}
-						renderRow={(rowData) => <TodayButton location={rowData} parent={this} />}
+						renderRow={(rowData, sectionID, rowID) => <CurrentDayButton location={rowData} name={this.state.names[rowID]} parent={this} />}
 					/>
 				</View>
 				<View style={CurrentDayStyles.bottomView}>
@@ -509,7 +497,7 @@ class CurrentDayButton extends React.Component {
 	buttonPressed() {
 		this.props.parent.props.navigation.navigate("MapView", {
 			location: this.props.location,
-			date: this.props.parent.props.navigation.state.params.key
+			name: this.props.name,
 		});
 	}
 
@@ -518,7 +506,7 @@ class CurrentDayButton extends React.Component {
 			<TouchableHighlight
 				onPress={this.buttonPressed.bind(this)}
 				style={CurrentDayButtonStyles.button}>
-				<Text style={CurrentDayButtonStyles.text}>{this.props.location}</Text>
+				<Text style={CurrentDayButtonStyles.text}>{this.props.name}</Text>
 			</TouchableHighlight>
 		)
 	}
@@ -573,26 +561,6 @@ class Today extends React.Component {
 			}
 		});
 
-		// await storage.set("places", places);
-		// await storage.get("places").then(async (value) => {
-		// 	var places = JSON.parse(value);
-		// 	var points = this.state.rawLocationData;
-		// 	if (places != null) {
-		// 		this.state.places = places;
-		// 		var namedArray = new Array();
-		// 		for (var i = 0; i < points.length; i++) {
-		// 			var thePlace = UTILS.checkPlaces(places, points[i]);
-		// 			if (thePlace != null) {
-		// 				var place = thePlace;
-		// 			} else {
-		// 				var place = points[i];
-		// 			}
-		// 			namedArray.push(place);
-		// 		}
-		// 		// console.warn(namedArray);
-		// 		this.setState({namedData: ds.cloneWithRows(points)});
-		// 	}
-		// });
 
 			// Only enters function when position changes
 			navigator.geolocation.watchPosition(async (position) => {
@@ -615,14 +583,6 @@ class Today extends React.Component {
 					this.setState({locationData: ds.cloneWithRows(newValue)});
 					var coords = JSON.stringify(newValue);
 					await storage.set(dictKey, coords);
-					// await storage.get("places").then(async (values) => {
-					// 	var places = JSON.parse(value);
-					// 	if (places != null) {
-					//
-					// 	}
-					// });
-					// await storage.set(coords, coords)
-
 				});
 			});
   }
@@ -640,7 +600,7 @@ class Today extends React.Component {
 				<View style={TodayStyles.topView}>
 					<ListView
 						dataSource={this.state.locationData}
-						renderRow={(rowData) => <TodayButton location={rowData} date={this.state.date} parent={this} />}
+						renderRow={(rowData, sectionID, rowID) => <TodayButton location={rowData} name={rowID} parent={this} />}
 					/>
 				</View>
 				<View style={TodayStyles.bottomView}>
@@ -690,7 +650,8 @@ class TodayButton extends React.Component {
 	buttonPressed() {
 		this.props.parent.props.navigation.navigate("MapView", {
 			location: this.props.location,
-			date: this.props.date});
+			name: this.props.name,
+		});
 	}
 
 	render() {
@@ -826,8 +787,9 @@ class Save extends React.Component {
 	constructor(props) {
     super(props);
     this.state = {
-			placeholder: " place",
-			radius: 200
+			placeholder: "place",
+			radius: 200,
+			place: ""
 		}
   }
 
@@ -836,7 +798,19 @@ class Save extends React.Component {
 	}
 
 	async saveData(location, placeData) {
-		await storage.set(location, JSON.stringify(placeData));
+		// console.log(location);
+		await storage.get("places").then( async (value) => {
+
+				if (value != null) {
+					var places = JSON.parse(value);
+					places[location] = placeData
+				} else {
+					var places = {};
+					places[location] = placeData;
+					console.log(places);
+					await storage.set("places", JSON.stringify(places));
+				}
+			});
 		this.props.navigation.goBack();
 	}
 
@@ -848,23 +822,17 @@ class Save extends React.Component {
 		var date = this.props.navigation.state.params.date;
 
 		// await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
-		var placeData = [values["place"], radius];
-
-
+		var placeData = [location, radius];
+		// console.log(values["place"]);
 		Alert.alert(
 		  'Location saved as ' + values["place"],
 		  "This will associate coordinates within a " + radius + " to the specified place.",
 		  [
 		    {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-		    {text: 'OK', onPress: () => this.saveData(location, placeData)},
+		    {text: 'OK', onPress: () => this.saveData(values["place"], placeData)},
 		  ],
 		  { cancelable: false }
 		)
-
-		// console.warn(date);
-		// console.warn(location);
-		// console.warn(values["place"]);
-		// console.warn(values["radius"]);
 	}
 
 	render() {
