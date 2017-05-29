@@ -138,7 +138,7 @@ class Settings extends React.Component {
 
 		await storage.set("14/5/2017", JSON.stringify(["-43.522508,172.581004", "-43.522508,172.581004", "-43.522508,172.581004"]));
 		await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
-		await storage.set("16/5/2017", JSON.stringify(["-43.522508,172.581004"]));
+		await storage.set("16/5/2017", JSON.stringify(["-43.523495, 172.583331"]));
  	}
 
 	render() {
@@ -555,15 +555,10 @@ class Today extends React.Component {
 		// 			namedArray.push(place);
 		// 		}
 		// 		// console.warn(namedArray);
-		// 		this.setState({namedData: ds.cloneWithRows(namedArray)});
-		// 	} else {
 		// 		this.setState({namedData: ds.cloneWithRows(points)});
 		// 	}
 		// });
 
-
-    // Runs Every Second
-    setInterval(async () => {
 			// Only enters function when position changes
 			navigator.geolocation.watchPosition(async (position) => {
 				var totalPosition = position.coords.latitude.toFixed(6) + "," + position.coords.longitude.toFixed(6);
@@ -595,7 +590,6 @@ class Today extends React.Component {
 
 				});
 			});
-    }, 1000);
   }
 
 	buttonPressed() {
@@ -797,8 +791,8 @@ class Save extends React.Component {
 	constructor(props) {
     super(props);
     this.state = {
-			placeholder: "place",
-			value: 200
+			placeholder: " place",
+			radius: 200
 		}
   }
 
@@ -806,17 +800,37 @@ class Save extends React.Component {
 		this.props.navigation.goBack();
 	}
 
+	async saveData(location, placeData) {
+		await storage.set(location, JSON.stringify(placeData));
+		this.props.navigation.goBack();
+	}
+
 	saveForm() {
 		var values = this.refs.form.getValues();
 		var radius = values["radius"] * 0.001; // m => km
+		radius = radius.toFixed(3);
 		var location = this.props.navigation.state.params.location;
 		var date = this.props.navigation.state.params.date;
-		console.warn(date);
-		console.warn(location);
-		console.warn(values["place"]);
-		console.warn(values["radius"]);
-	}
 
+		// await storage.set("15/5/2017", JSON.stringify(["-43.522508,172.581004"]));
+		var placeData = [values["place"], radius];
+
+
+		Alert.alert(
+		  'Location saved as ' + values["place"],
+		  "This will associate coordinates within a " + radius + " to the specified place.",
+		  [
+		    {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+		    {text: 'OK', onPress: () => this.saveData(location, placeData)},
+		  ],
+		  { cancelable: false }
+		)
+
+		// console.warn(date);
+		// console.warn(location);
+		// console.warn(values["place"]);
+		// console.warn(values["radius"]);
+	}
 
 	render() {
 		return(
@@ -832,9 +846,9 @@ class Save extends React.Component {
 						<TextInput style={SaveStyles.textInputStyle} type="TextInput" name="place"onChangeText={(placeholder) => this.setState({placeholder})} value={this.state.placeholder}/>
 						<View style={{height:45, alignItems:'center', marginBottom: 20}}>
 							<Text style={SaveStyles.normalText}>Set Radius:</Text>
-							<Text style={SaveStyles.textInputStyle}>{this.state.value && +this.state.value.toFixed(0)} meters</Text>
+							<Text style={SaveStyles.textInputStyle}>{this.state.radius && +this.state.radius.toFixed(0)} meters</Text>
 						</View>
-						<Slider type="Slider" name="radius" minimumValue={0} maximumValue={1000} value={100} maximunTrackTintColor='#800000' minimunTrackTintColor='#800000' thumbTintColor='black' onValueChange={(value) => this.setState({value: value})}/>
+						<Slider type="Slider" name="radius" minimumValue={0} maximumValue={1000} value={200} maximunTrackTintColor='#800000' minimunTrackTintColor='#800000' thumbTintColor='black' onValueChange={(value) => this.setState({radius: value})}/>
 					</Form>
 				</View>
 				<View style={SaveStyles.bottomView}>
